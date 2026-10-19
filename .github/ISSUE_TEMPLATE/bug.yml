@@ -1,0 +1,21 @@
+name: Bug report
+description: Report a reproducible extraction, crawl or analysis failure
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the command, Node version and redacted error. No secrets or private URLs.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Relevant public source or synthetic fixture
+      description: For incorrect claims, show which evidence ID does not support the claim.
