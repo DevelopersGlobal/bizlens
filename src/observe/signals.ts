@@ -256,9 +256,26 @@ const metaObserver: Observer = (pages, eb) => {
   }
 };
 
+const narrativeObserver: Observer = (pages, eb) => {
+  for (const p of pages) {
+    const $ = load(p.html);
+    $('script,style,nav,footer,header,noscript').remove();
+    let count = 0;
+    $('h1,h2,p').each((_, el) => {
+      if (count >= 4) return;
+      const quote = $(el).text().replace(/\s+/g, ' ').trim();
+      if (quote.length < 45 || quote.length > 800) return;
+      if (!/about|company|story|history|pricing|plans/.test(p.finalUrl) && pages[0] !== p) return;
+      eb.add('content.excerpt', 'Public page excerpt (site statement, not independently verified)', p.finalUrl, quote);
+      count++;
+    });
+  }
+};
+
 /** All built-in observers. Add yours here (see ARCHITECTURE.md). */
 export const OBSERVERS: Observer[] = [
   metaObserver,
+  narrativeObserver,
   pricingObserver,
   paymentObserver,
   trackerObserver,
