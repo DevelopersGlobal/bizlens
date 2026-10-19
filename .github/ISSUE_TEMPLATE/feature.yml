@@ -1,0 +1,20 @@
+name: Feature idea
+description: Propose a useful feature or observer
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Proposed evidence and validation
+      description: What public source would support it? How do we avoid guesses and wrong-company matches?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Smallest useful version and tests

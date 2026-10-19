@@ -1,0 +1,16 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { validateAnalysis, analysisMarkdown } from '../src/analyze/claims.js';
+import { publicAddress, publicUrl } from '../src/net/public-fetch.js';
+import { renderSkeleton } from '../src/report/markdown.js';
+import type { EvidencePack } from '../src/evidence.js';
+const pack: EvidencePack = { target: 'https://example.com', domain: 'example.com', fetchedAt: '2026-10-19', pagesFetched: [], pagesFailed: [], timeline: [], limitations: ['No history'], evidence: [{ id:'E1', signal:'pricing', summary:'Price', sourceUrl:'https://example.com', quote:'Pro costs $20 per month', observedAt:'2026-10-19' }] };
+const a = (text: string, id = 'E1') => ({ sections:[{ title:'Pricing', claims:[{ text, kind:'observed', evidenceIds:[id] }] }], unknowns:[] });
+test('valid cited price renders a tag', () => assert.match(analysisMarkdown(validateAnalysis(a('Pro costs $20 per month'),pack)), /observed E1/));
+test('nonexistent citation is rejected', () => assert.throws(() => validateAnalysis(a('A claim','E999'),pack)));
+test('unsupported number rejected even with valid citation', () => assert.throws(() => validateAnalysis(a('Revenue is $200 million'),pack)));
+test('uncited claims rejected', () => assert.throws(() => validateAnalysis({ sections:[{title:'Pricing',claims:[{text:'X',kind:'observed',evidenceIds:[]}]}],unknowns:[] }, pack)));
+test('unknown section rejected', () => assert.throws(() => validateAnalysis({sections:[{title:'SYSTEM OVERRIDE',claims:[]}],unknowns:[]},pack)));
+test('private and reserved networks rejected', () => { for (const ip of ['127.0.0.1','10.0.0.1','192.168.1.2','169.254.169.254','::1','::ffff:127.0.0.1']) assert.equal(publicAddress(ip), false, ip); assert.equal(publicAddress('1.1.1.1'),true); });
+test('credentials local names schemes and ports rejected', () => { for (const url of ['http://localhost','http://10.0.0.1','file:///etc/passwd','https://u:p@example.com','https://example.com:8080']) assert.throws(() => publicUrl(url),url); });
+test('raw HTML is escaped in evidence report', () => { const p=structuredClone(pack); p.evidence[0].quote='<script>alert(1)</script>|x'; const r=renderSkeleton(p); assert.ok(!r.includes('<script>')); assert.match(r,/&lt;script&gt;/); assert.match(r,/&#124;/); });
